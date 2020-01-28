@@ -1,0 +1,165 @@
+一些概念>>
+###路由: 简单理解就是将一个位置的信息通过网络传输的方式传到另外一个位置上;
+
+后端渲染(SSR): 简单理解>页面的渲染是在后端完成的然后直接将页面返回给前端展示;
+  以前在开发网页的时候,都是用后端的语言来进行网页开发(比如jsp),
+  例如: 我们在浏览器输入一个url地址的时候,浏览器就会把这个url地址发送到一个服务器地址,首先服务器会对这个url进行解析,
+  如果你想访问的是这个url的首页,那么后台服务器就会通过jsp这个技术将页面的html,css以及页面显示的数据生成(数据的生成可能是
+  使用java代码动态的从数据库读取数据),这样页面就在服务器中生成了,然后再将页面返回给浏览器进行展示;
+  如果再想访问其他页面,会再重复上面的步骤;
+  后端渲染有利于SEO的优化, 可以被爬虫抓取到的;
+  但是会增加服务器的压力,页面的结构代码和数据处理的代码会混在一起,后期不好维护,会存在高并发的情况;
+
+前后端分离阶段:
+后端只负责提供页面上显示的数据,前端通过ajax技术从后台的静态资源服务器获取页面的html,css,
+当我们在执行js代码的时候,浏览器再从api接口服务器获取动态展示的数据;
+
+前端渲染:
+  前端通过ajax技术来获取到后台的数据,经过浏览器的解析器执行将页面渲染拿到浏览器上,
+  这样的有点可一让前后端的责任清晰分开,后端更注重于数据和业务逻辑,前端更注重于页面交互,切不存在高并发;
+  但是前端渲染不利于 SEO 搜索引擎优化,很难被爬虫抓取到的
+
+###前路由的核心:url改变页面不会刷新
+使用 location.hash = '路径'
+还可以使用html5中的
+history.pushState({}, '', 'url'),这个方法就是做的入栈和出栈的过程,会保存浏览的历史过程
+history.replaceState({}, '', 'url') 这个方法也会不让页面刷新发生改变,但是不会没有回退的记录
+history.back() 回退一次浏览记录
+history.go(数值) 对应跳转到当前页面的前面或者后面的浏览记录,数值可正负
+history.forward(数值) 向前跳转对应的浏览记录
+
+###vue-router的安装和配置
+安装: npm install vue-router --save
+
+使用步骤:
+  1.引入vue, 引入vue-router, 对vue-router进行注册(而且只要是vue的插件必须要使用)
+  2.配置路由路径规则(在routes配置项中写路由规则配置),并导出:
+      import Vue from 'vue'
+      import Router from 'vue-router'
+
+      Vue.use(Router)
+
+      export default new Router({
+        mode: 'history', // 加上这个配置项可以把hash的#号去除掉
+        routes: [
+          {path: '/home', component: Home}, // 路由的匹配规则
+          {path: '/', redirect: '/home'} // 路由的重定向
+        ]
+      })
+   3.将router的实例对象挂在到vue的实例对象中(在main.js中挂在vue-router)
+     import router from './router'
+     new Vue({
+       render: h => h(App),
+       router
+     }).$mount('#app')
+
+vue-router(声明式路由)的简单使用:
+<router-link to="路由路径" tag="button" replace>xxx</router-link>
+  使用 router-link标签 来指定匹配的路由路径,表示点击这个标签成功匹配路由后要让对应的路由组件显示出来
+  router-link标签 在浏览器渲染的时候会被默认渲染为a标签
+  如果想让它渲染为指定的标签,可以加熟悉tag="标签名",就可以渲染为指定的标签
+  给标签添加 replace字段 就可以让这个路由不能回退
+  router-link标签 中有一个类 router-link-active 会在这个标签被点击的时候添加上.可以用这个类做这个标签被点击时的样式修改
+
+
+<router-view></router-view>
+  使用 router-view标签 用来渲染成功匹配到路由路径的路由组件,这个标签放在那里成功匹配到的路由组件就会显示在那里
+
+编程式路由的使用:
+handleClick() {
+  // 对vue-router进行注册后,vue的实力会挂在$router属性.
+  this.$router.push('路由路径')
+}
+
+动态路由的使用:
+什么是动态路由: 例如我们在进入到/user页面的时候,我们希望路由后面跟着/user/用户的名字,但是我们并不确定用户名是谁,
+用户的名字是由于登录的人决定的,
+/user/lwy
+/user/xxx
+这时候我们就会用到动态路由;
+this.$router 和 this.$route 的区别:
+this.$router 是 vue-router的实例对象.有很多的方法调用
+this.$route 是 当前哪个路由组件处于活跃状态,他就是哪个路由组件
+  在路由规则中的{path: '/user/:userId', component: User}
+  可以通过this.$route.params.userId 来获取到动态绑定的userId的值
+<router-link :to="'/user/'+ userId" tag="button">去User</router-link>
+动态绑定路由需要用v-bind指令和 component计算属性
+
+###vue的路由懒加载(用到的时候才加载):
+  为什么要使用路由的懒加载?
+    因为我们在项目写完之后,对项目进行构建打包的时候,如果主要程序的JS代码只打包到一个js代码文件内,
+    我们在往主程序写继续写代码的时候,这个文件就会越来越大,会影响页面的首次加载(页面会出现短暂的空白)
+    也就是在请求js文件时,如果文件过大.浏览器的解析的速度就可能会慢一些;使用路由懒加载就可以解决这个问题;
+
+  路由懒加载的作用:
+    将路由对应的路由组件打包为一个一个的单独的js文件,只有在对应的路由被访问的时候才会加载对应的组件;
+
+  使用方法:
+  routes: [
+      // 原来路由的写法
+      {path: '/home', component: Home},
+      {
+        // 使用路由懒加载的写法
+        path: '/user',
+        component: () => import('路由路径')
+      }
+    ]
+  以后写路由的时候都要写路由懒加载的方式
+
+  ##嵌套路由的使用 router > index.js
+
+  ##vue-router中的参数传递的方式:
+    1- 配置动态路由的方式
+    2- 通过query字段模式传递
+       <router-link :to="{path: '/profile', query: {name: 'lwy', age: '27'}}">Profile</router-link>
+       url显示路径会变为 http://localhost:8080/profile?name=lwy&age=27
+      在对应的组件取出query对象内的数据: <p>我叫{{this.$route.query.name}}</p>
+
+  ##vue-router的导航守卫(路由的生命周期函数)?
+    作用:我们可以在路由跳转的这个过程中对这个路由进行监听,然后再对跳转的过程中进行一些操作;
+        进行的操作需要在对应的监听函数中进行;(主要目的就是监听从哪个组件到哪个组件)
+        例如: 在A B 两个路由链接中来回切换跳转,我们就可以对来回切换的过程中进行一些监听,然后在对应的某一个监听函数中进行想做的事情;
+
+  ###全局路由守卫(只要有路由发生跳转就会调用的函数)使用方法:
+      我们需要在router文件夹内的index路由配置文件中进行编写
+      // 全局配置 前置路由导航守卫(gard)
+      router.beforeEach((to, from, next) => {
+        /*
+        * 这个钩子函数会在路由跳转完之前执行
+        * 参数:
+        * to 去哪个路由组件
+        * from 从哪个路由组件来
+        * next:是一个函数,必须调用,才会执行下面的代码
+        * */
+        document.title = to.matched[0].meta.title
+        console.log(to)
+        next()
+      })
+
+     //全局配置 后置路由导航守卫(hook)
+     router.afterEach((to, from) => {
+      /*
+      * to:去哪个路由组件
+      * from: 从哪个路由组件来
+      */
+     })
+
+  ###组件内的路由导航守卫 https://segmentfault.com/a/1190000013956945
+
+  ### keep-alive的属性 include exclude 后面可以跟正则或者路由组件名字符串
+      include 表示指定匹配的路由组件被缓存
+      exclude 表示指定除了某个路由组件之外,其他的都会被缓存
+      <keep-alive include='路由组件名,路由组件名' 或者 exclude='路由组件名,路由组件名'>
+        <router-view></router-view>
+      </keep-alive>
+
+  
+
+
+
+
+
+
+
+
+

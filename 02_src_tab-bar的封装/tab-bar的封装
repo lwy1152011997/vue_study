@@ -1,0 +1,14 @@
+包括的功能
+动态传入icon text active-icon active-text-color
+根据所点击的路由激活 active-icon 以及 active-text
+只需要通过标签属性的方式传入对应的值即可
+
+给路径取别名:
+在webpack.base.conf.js 中进行修改
+配置:
+  alias: {
+    '@': resolve('src'), // @就表示src目录
+    'assets': resolve('src/assets') // assets就表示 src目录下的assets文件夹目录
+  }
+  后面的路径都可以这样 @/components/XXX 表示src下的components下的XXX组件
+  在html结构中使用别名写路径的时候.要加一个中波浪号 <img src="~assets/img/aaa.jpg"/>
